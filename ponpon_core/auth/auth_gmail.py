@@ -5,7 +5,7 @@ from typing import Any
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 PATH_TO_USER_CREDENTIALS = Path(__file__).parent.parent.joinpath("users_credentials")
 
 
@@ -43,7 +43,9 @@ def gmail_auth(user: str = None):
     :return: Gmail handle.
     """
     if not check_users(user):
-        flow = InstalledAppFlow.from_client_secrets_file(r"../../credentials.json", SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file(
+            r"../../credentials.json", SCOPES
+        )
         credentials = flow.run_local_server(port=8080)
         with open(fr"{PATH_TO_USER_CREDENTIALS}\{user}.pickle", "wb") as file:
             pickle.dump(credentials, file)

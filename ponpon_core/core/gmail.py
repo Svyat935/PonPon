@@ -6,4 +6,3 @@ from googleapiclient.discovery import Resource
 @dataclass
 class UserGmail:
     user_service: Resource
-
