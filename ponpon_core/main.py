@@ -1,14 +1,11 @@
 from database.connect import engine, Base
 from fastapi import FastAPI
-from database.models import User, User_Script, Script
+from database.models.user import User
+from database.models.email_behavior import EmailBehavior
+from database.models.email_scripts import EmailScripts
+from database.models.email_scripts_relation import EmailScriptsRelation
 
-TABLE_TO_CREATE = (
-    Base.metadata.tables["users"],
-    Base.metadata.tables["users_scripts"],
-    Base.metadata.tables["scripts"],
-)
-
-Base.metadata.create_all(bind=engine, tables=TABLE_TO_CREATE)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
