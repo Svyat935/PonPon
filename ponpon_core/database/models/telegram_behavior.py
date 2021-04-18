@@ -8,8 +8,8 @@ class TelegramBehavior(Base):
 
     id = Column(Integer, ForeignKey('users.id'), primary_key=True)
     id_script = Column(Integer, ForeignKey('telegram_scripts.id'), primary_key=True)
-    child = relationship('EmailScripts', back_populates='parents')
-    parent = relationship('User', back_populates='children')
+    # child = relationship('EmailScripts', back_populates='parents')
+    # parent = relationship('User', back_populates='children')
 
     def __repr__(self):
         return f"<TelegramBehavior(id:{self.id}, id_script:{self.name})>"

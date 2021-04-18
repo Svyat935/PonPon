@@ -11,8 +11,6 @@ class EmailScripts(Base):
     action = Column(PickleType)
     variables = Column(PickleType)
     parents = relationship('EmailBehavior', back_populates='child')
-    parent_script = relationship('EmailScriptsRelation', back_populates='child')
-    child_script = relationship('EmailScriptsRelation', back_populates='parent')
 
     def __repr__(self):
         return f"<EmailScripts(id:{self.id}, content:{self.content}, action:{self.action}, variables:{self.variables})>"
