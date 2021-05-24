@@ -8,7 +8,9 @@ export const useRoutes = (isAuth) => {
     if (isAuth){
         return (
             <Switch>
-                <Route exact path="/" children={()=><h2>OK 0</h2>}/>
+                <Route exact path="/">
+                    <MainPage/>
+                </Route>
                 <Route exact path="/test1" children={()=><h2>OK 1</h2>}/>
                 <Route exact path="/test2" children={()=><h2>OK 2</h2>}/>
             </Switch>
@@ -19,9 +21,6 @@ export const useRoutes = (isAuth) => {
         <Switch>
             <Route exact path="/">
                 <AuthPage/>
-            </Route>
-            <Route exact path="/main/">
-                <MainPage/>
             </Route>
             <Redirect to="/"/>
         </Switch>
