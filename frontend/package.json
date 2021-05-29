@@ -8,9 +8,12 @@
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
     "clsx": "^1.1.1",
+    "graphicsjs": "^1.3.2",
     "jquery": "^3.6.0",
+    "konva": "^8.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-konva": "^17.0.2-4",
     "react-scripts": "4.0.3",
     "web-vitals": "^1.1.2"
   },

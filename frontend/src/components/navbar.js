@@ -83,7 +83,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-export const Navbar = () => {
+export const Navbar = (props) => {
     const history = useHistory();
     const auth = useContext(AuthContext);
     const [open, setOpen] = React.useState(false);
@@ -100,13 +100,13 @@ export const Navbar = () => {
         auth.logout();
     }
     const handleProfile = () => {
-        history.push("/test1");
+        history.push("/profile");
     }
     const handleSettings = () => {
-        history.push("/test2");
+        history.push("/settings");
     }
-    const handleConstructor = () => {
-        history.push("/test1");
+    const handleMainPage = () => {
+        history.push("/");
     }
 
     return (
@@ -123,7 +123,7 @@ export const Navbar = () => {
                         <MenuIcon/>
                     </IconButton>
                     <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-                        Main Page
+                        {props.navbarTitle}
                     </Typography>
                     <IconButton color="inherit">
                     </IconButton>
@@ -151,9 +151,9 @@ export const Navbar = () => {
                         <ListItemText primary={"Exit"}/>
                     </ListItem>
                     <Divider/>
-                    <ListItem button key={"constructors"} onClick={() => handleConstructor()}>
+                    <ListItem button key={"mainPage"} onClick={() => handleMainPage()}>
                         <ListItemIcon><AppsIcon/></ListItemIcon>
-                        <ListItemText primary={"Constructors"}/>
+                        <ListItemText primary={"Main Page"}/>
                     </ListItem>
                     <ListItem button key={"settings"} onClick={() => handleSettings()}>
                         <ListItemIcon><SettingsIcon/></ListItemIcon>

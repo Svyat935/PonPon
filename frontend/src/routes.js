@@ -2,6 +2,9 @@ import React from 'react';
 import {Switch, Route, Redirect} from 'react-router-dom';
 import {AuthPage} from "./pages/auth/AuthPage";
 import {MainPage} from "./pages/main/MainPage";
+import {ProfilePage} from "./pages/profile/ProfilePage";
+import {SettingsPage} from "./pages/settings/SettingsPage";
+import {ConstructorPage} from "./pages/constructor/ConstructorPage";
 
 
 export const useRoutes = (isAuth) => {
@@ -11,8 +14,15 @@ export const useRoutes = (isAuth) => {
                 <Route exact path="/">
                     <MainPage/>
                 </Route>
-                <Route exact path="/test1" children={()=><h2>OK 1</h2>}/>
-                <Route exact path="/test2" children={()=><h2>OK 2</h2>}/>
+                <Route exact path="/profile">
+                    <ProfilePage/>
+                </Route>
+                <Route exact path="/settings">
+                    <SettingsPage/>
+                </Route>
+                <Route exact path="/build">
+                    <ConstructorPage/>
+                </Route>
             </Switch>
         )
     }
