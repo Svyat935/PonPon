@@ -4,3 +4,6 @@ node_modules/*
 */.idea/
 */node_modules/
 */package-lock.json
+*/backend/venv/*
+/backend/venv/
+credentials.json
