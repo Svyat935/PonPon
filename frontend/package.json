@@ -19,7 +19,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start-api": "cd ../backend && flask run",
+    "start-api": "cd ../backend && uvicorn main:app",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -42,9 +42,10 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000",
   "devDependencies": {
     "@material-ui/icons": "^4.11.2",
+    "http-proxy-middleware": "^2.0.0",
     "react-router-dom": "^5.2.0"
-  }
+  },
+  "proxy": "http://localhost:8000"
 }

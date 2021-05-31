@@ -11,6 +11,7 @@ class User(Base):
     email = Column(String)
     password = Column(String)
     children = relation('EmailBehavior', back_populates='parent')
+    settings = relation("Settings", back_populates='parent')
 
     def __repr__(self):
         return f"<User(id:{self.id}, name:{self.name}, email:{self.email}, password:{self.password})>"

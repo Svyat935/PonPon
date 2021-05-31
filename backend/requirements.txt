@@ -10,3 +10,5 @@ googleapis-common-protos==1.53.0
 psycopg2==2.8.6
 SQLAlchemy==1.4.2
 uvicorn==0.13.4
+python-telegram-bot==13.5
+pyjwt==2.1.0

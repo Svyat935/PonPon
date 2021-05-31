@@ -225,8 +225,6 @@ export const ConstructorPage = () => {
             let upper_block = new Konva.Group({
                 x: rect.x,
                 y: rect.y,
-                width: 200,
-                height: 35,
             })
             upper_block.add(new Konva.Rect(
                 {
@@ -257,8 +255,6 @@ export const ConstructorPage = () => {
             let center_block = new Konva.Group({
                 x: rect.x,
                 y: rect.y + 40,
-                width: 200,
-                height: 50,
             })
             center_block.add(new Konva.Rect(
                 {
@@ -295,8 +291,6 @@ export const ConstructorPage = () => {
                 let block = new Konva.Group({
                     x: rect.x,
                     y: rect.y + current_height + 100,
-                    width: 200,
-                    height: 35
                 })
                 block.add(new Konva.Rect({
                     fill: "#FFFFFF",
@@ -356,6 +350,7 @@ export const ConstructorPage = () => {
                         fill: 'black',
                         points: points
                     })
+                    console.log(line);
                     layer.add(line);
                 }
             }
@@ -384,7 +379,7 @@ export const ConstructorPage = () => {
                     <IconButton color="inherit"/>
                 </Toolbar>
             </AppBar>
-            <main id="main" className={classes.content}>
+            <main id="main" className={classes.content} onClick={(e) => {console.log(e.clientX, e.clientY)}}>
                 <div className={classes.appBarSpacer}/>
                 <Container id="container" maxWidth="xl">
                     <div className={classes.buttons}>

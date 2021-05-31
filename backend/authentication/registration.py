@@ -1,10 +1,10 @@
 from authentication.requests_models.user import User as UserRequest
-from bcrypt import hashpw
+from bcrypt import hashpw, gensalt
 from database.models.user import User as UserModel
 from psycopg2._psycopg import DatabaseError
 from starlette.responses import JSONResponse
 
-PASSWORD_SALT = b'$2b$12$vjCZvjeC/OV2Z9LAE9mdFe'
+PASSWORD_SALT = gensalt()
 
 
 async def registration(user_request: UserRequest):

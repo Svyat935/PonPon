@@ -32,7 +32,6 @@ export const useRoutes = (isAuth) => {
             <Route exact path="/">
                 <AuthPage/>
             </Route>
-            <Redirect to="/"/>
         </Switch>
     )
 }
