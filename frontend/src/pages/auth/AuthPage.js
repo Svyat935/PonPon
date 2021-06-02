@@ -140,11 +140,9 @@ export const AuthPage = () => {
                         <input className="form-styling" type="text" required name="password" placeholder=""/>
                         <label htmlFor="confirmpassword">Confirm password</label>
                         <input className="form-styling" type="text" required name="confirmpassword" placeholder=""/>
-                        <button>
                             <a ng-click="checked = !checked" className="btn-signup" onClick={() => {
                                 action_btn_signup()
                             }}>Sign Up</a>
-                        </button>
                     </form>
                     <div className="success-signup">
                         <div className="successtext-signup">

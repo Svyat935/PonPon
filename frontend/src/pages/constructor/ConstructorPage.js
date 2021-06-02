@@ -2,16 +2,19 @@ import React, {useEffect} from "react"
 import {Stage, Layer, Rect, Text} from 'react-konva';
 import Konva from 'konva';
 import clsx from "clsx";
+import "./Constructor.css";
 import Typography from "@material-ui/core/Typography";
 import AppBar from "@material-ui/core/AppBar";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from '@material-ui/icons/Close';
 import {useHistory} from "react-router-dom";
 import Toolbar from "@material-ui/core/Toolbar";
 import Container from "@material-ui/core/Container";
 import AddIcon from '@material-ui/icons/Add';
 import $ from "jquery";
+import {appendButtons, appendTextBlock, appendTitleBlock, createBackground} from "./subConstructor";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -64,15 +67,15 @@ const useStyles = makeStyles((theme) => ({
 
 function generateShapes() {
     return [...Array(3)].map((_, i) => ({
-        id: i.toString(),
+        id: i.toString() == 0 ? "/start" : i.toString() == 1 ? "/continue" : "/ok",
         x: Math.random() * 500,
         y: Math.random() * 300,
         isDragging: false,
         text: i === 0 ? "Test" : i === 1 ? "Another Test" : "One more more more test",
         buttons: i === 2 ? [
-            {text: "option1", link: 0},
-            {text: "option2", link: 0},
-            {text: "option3", link: 2}
+            {id: 0, text: "option1", link: "/start"},
+            {id: 1, text: "option2", link: "/continue"},
+            {id: 2, text: "option3", link: "/start"}
         ] : []
     }));
 }
@@ -147,14 +150,14 @@ function getCenter(node) {
 }
 
 export const ConstructorPage = () => {
-    const [rects, setRects] = React.useState(INITIAL_STATE);
+    const [blocks, setRects] = React.useState(INITIAL_STATE);
     const classes = useStyles();
     const history = useHistory();
 
     const handleDragStart = (e) => {
         const id = e.target.id();
         setRects(
-            rects.map((rect) => {
+            blocks.map((rect) => {
                 return {
                     ...rect,
                     isDragging: rect.id === id,
@@ -164,7 +167,7 @@ export const ConstructorPage = () => {
     };
     const handleDragEnd = (e) => {
         setRects(
-            rects.map((rect) => {
+            blocks.map((rect) => {
                 return {
                     ...rect,
                     isDragging: false,
@@ -186,175 +189,53 @@ export const ConstructorPage = () => {
 
         let layer = new Konva.Layer();
 
-        //Background
-        layer.add(new Konva.Rect({
-            x: 0,
-            y: 0,
-            fill: "#F8FAFF",
-            width: window.innerWidth,
-            height: window.innerHeight,
-        }))
-        for (let i = 0; i < 19; i++) {
-            layer.add(new Konva.Line({
-                points: [0, 88 * i, window.innerWidth, 88 * i],
-                stroke: 'rgba(0,0,0,0.2)',
-                strokeWidth: 1,
-            }))
-        }
-        for (let i = 0; i < 19; i++) {
-            layer.add(new Konva.Line({
-                points: [88 * i, 0, 88 * i, window.innerHeight],
-                stroke: 'rgba(0,0,0,0.2)',
-                strokeWidth: 1,
-            }))
-        }
+        createBackground(layer)
 
-        //Blocks
-        rects.forEach((rect) => {
-            let group = new Konva.Group({
-                key: rect.id,
-                id: rect.id,
-                x: rect.x,
-                y: rect.y,
+        blocks.forEach((block) => {
+            let group_block = new Konva.Group({
+                id: block.id,
                 draggable: true,
                 onDragStart: handleDragStart,
                 onDragEnd: handleDragEnd
+            })
+            group_block.on('mouseenter', function () {
+                stage.container().style.cursor = 'pointer';
             });
-
-            /* START UPPER BLOCK */
-            let upper_block = new Konva.Group({
-                x: rect.x,
-                y: rect.y,
+            group_block.on('mouseleave', function () {
+                stage.container().style.cursor = 'default';
+            });
+            group_block.on("click", (e) => {
+                $("#action_block").show(750);
             })
-            upper_block.add(new Konva.Rect(
-                {
-                    fill: "#5199ff",
-                    width: 200,
-                    height: 35,
-                    shadowColor: "black",
-                    shadowBlur: 10,
-                    shadowOpacity: 0.6,
-                    shadowOffsetX: rect.isDragging ? -10 : -5,
-                    shadowOffsetY: rect.isDragging ? 10 : 5,
-                })
-            );
-            upper_block.add(new Konva.Text({
-                text: rect.id,
-                fontSize: 16,
-                verticalAlign: 'middle',
-                width: 200,
-                height: 35,
-                align: "center",
-                fill: "white",
-                fontFamily: "Arial"
-            }))
-            group.add(upper_block);
-            /* END UPPER BLOCK */
+            appendTitleBlock(group_block, block);
+            appendTextBlock(group_block, block);
+            appendButtons(group_block, block);
 
-            /* START CENTER BLOCK */
-            let center_block = new Konva.Group({
-                x: rect.x,
-                y: rect.y + 40,
-            })
-            center_block.add(new Konva.Rect(
-                {
-                    fill: "#FFFFFF",
-                    width: 200,
-                    height: 50,
-                    shadowColor: "black",
-                    shadowBlur: 10,
-                    stroke: 'rgba(0,0,0,0.5)',
-                    strokeWidth: 1,
-                    shadowOpacity: 0.6,
-                    shadowOffsetX: rect.isDragging ? -10 : -5,
-                    shadowOffsetY: rect.isDragging ? 10 : 5,
-                })
-            );
-            center_block.add(new Konva.Text({
-                text: rect.text,
-                fontSize: 16,
-                verticalAlign: 'middle',
-                width: 200,
-                height: 50,
-                align: "center",
-                fill: "black",
-                fontFamily: "Arial"
-            }))
-            group.add(center_block);
-            /* END CENTER BLOCK */
+            layer.add(group_block);
+        })
 
-            // let current_height = 95
-            let current_height = 0;
-
-            /* START BOTTOM BLOCK */
-            rect.buttons.map((button) => {
-                let block = new Konva.Group({
-                    x: rect.x,
-                    y: rect.y + current_height + 100,
-                })
-                block.add(new Konva.Rect({
-                    fill: "#FFFFFF",
-                    width: 200,
-                    height: 35,
-                    shadowColor: "black",
-                    shadowBlur: 10,
-                    stroke: "#5199ff",
-                    strokeWidth: 2,
-                    cornerRadius: 15,
-                    shadowOpacity: 0.6,
-                    shadowOffsetX: rect.isDragging ? -10 : -5,
-                    shadowOffsetY: rect.isDragging ? 10 : 5,
-                }))
-                block.add(new Konva.Text({
-                    text: button.text,
-                    fontSize: 16,
-                    verticalAlign: 'middle',
-                    width: 200,
-                    height: 35,
-                    align: "center",
-                    fill: "black",
-                    fontFamily: "Arial"
-                }))
-                current_height += 40;
-                group.add(block);
-            })
-            /* END BOTTOM BLOCK */
-
-            layer.add(group);
-        });
-
-        //Connection
-        //TODO ПИЗДА С КОНЕКТАМИ ЕБАННЫМИ
         let groups = layer.getChildren((node) => {
             return node.getClassName() === "Group";
         });
-        rects.forEach((rect) => {
-            if (rect.buttons.length){
-                const buttons = rect.buttons;
-                for(let i = 0; i < buttons.length; i++) {
-                    let points = []
+        blocks.forEach((block) => {
+            block.buttons.forEach((button) => {
+                let from_group = groups.filter((group) => group.getAttrs().id == block.id)[0],
+                    to_group = groups.filter((group) => group.getAttrs().id == button.link)[0];
 
-                    groups.forEach((group) => {
-                        if (group.getAttrs().id == buttons[i].link){
-                            points.push(group.x(), group.y());
-                            console.log(group);
-                        }
-                        else if (group.getAttrs().id == rect.id){
-                            points.push(group.x(), group.y());
-                            console.log(group);
-                        }
-                    })
+                let to_rect = to_group.getChildren()[0],
+                    from_rect = from_group.getChildren((node) => {
+                        return node.getAttrs().id == button.id
+                    })[0];
 
-                    let line = new Konva.Line({
-                        stroke: 'black',
-                        fill: 'black',
-                        points: points
-                    })
-                    console.log(line);
-                    layer.add(line);
-                }
-            }
-        });
+                let line = new Konva.Arrow({
+                    stroke: 'black',
+                    fill: 'black',
+                });
+                line.points([from_rect.x(), from_rect.y(), to_rect.x(), to_rect.y()]);
+                layer.add(line);
+            })
+        })
+
 
         stage.add(layer);
     });
@@ -379,7 +260,81 @@ export const ConstructorPage = () => {
                     <IconButton color="inherit"/>
                 </Toolbar>
             </AppBar>
-            <main id="main" className={classes.content} onClick={(e) => {console.log(e.clientX, e.clientY)}}>
+            <div id="action_block">
+                <div className="block_header">
+                    <span className="block_name">Commands settings</span>
+                    <div className="block_header_buttons">
+                        <IconButton onClick={() => {
+                            $("#action_block").hide(750);
+                        }}>
+                            <CloseIcon/>
+                        </IconButton>
+                    </div>
+                </div>
+                <div className="block_content">
+                    <div className="block_component">
+                        <div className="component_content">
+                            <span>Command name:</span>
+                            <div className="input_name">
+                                <input type="text" placeholder="Command name"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="block_component">
+                        <div className="component_content">
+                            <span>Text for output:</span>
+                            <div className="input_text">
+                                <textarea placeholder="Text for output"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="block_component">
+                        <div className="component_content">
+                            <span>Buttons:</span>
+                            <div className="content-button">
+                                <div className="button_name">
+                                    <input type="text" placeholder="Button name"/>
+                                </div>
+                                <div className="button_link">
+                                    <span>Link:</span>
+                                    <select className="link">
+                                        <option value="id 1">id 1</option>
+                                        <option value="id 2">id 2</option>
+                                        <option value="id 3">id 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="content-button">
+                                <div className="button_name">
+                                    <input type="text" placeholder="Button name"/>
+                                </div>
+                                <div className="button_link">
+                                    <span>Link:</span>
+                                    <select className="link">
+                                        <option value="id 1">id 1</option>
+                                        <option value="id 2">id 2</option>
+                                        <option value="id 3">id 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="content-button">
+                                <div className="button_name">
+                                    <input type="text" placeholder="Button name"/>
+                                </div>
+                                <div className="button_link">
+                                    <span>Link:</span>
+                                    <select className="link">
+                                        <option value="id 1">id 1</option>
+                                        <option value="id 2">id 2</option>
+                                        <option value="id 3">id 3</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <main id="main" className={classes.content}>
                 <div className={classes.appBarSpacer}/>
                 <Container id="container" maxWidth="xl">
                     <div className={classes.buttons}>
@@ -387,6 +342,7 @@ export const ConstructorPage = () => {
                             <AddIcon style={{fontSize: 20}}/>
                         </IconButton>
                     </div>
+
                     <div id={"stage"}></div>
                 </Container>
             </main>
