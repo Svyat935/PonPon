@@ -11,21 +11,25 @@ class User(BaseModel):
     email: str
     password: str
 
-    @validator('name')
+    @validator("name")
     def validator_for_name(cls, variable):
         with create_session() as session:
-            user_found = session.query(UserModel).filter(UserModel.name == variable).first()
+            user_found = (
+                session.query(UserModel).filter(UserModel.name == variable).first()
+            )
             if user_found:
                 raise ValueError("User exist!")
             return variable
 
     @validator("email")
     def validator_for_email(cls, variable):
-        pattern = re.compile('(^|\s)[-a-z0-9_.]+@([-a-z0-9]+\.)+[a-z]{2,6}(\s|$)')
+        pattern = re.compile("(^|\s)[-a-z0-9_.]+@([-a-z0-9]+\.)+[a-z]{2,6}(\s|$)")
         is_valid = pattern.match(variable)
         if is_valid:
             with create_session() as session:
-                user_found = session.query(UserModel).filter(UserModel.email == variable).first()
+                user_found = (
+                    session.query(UserModel).filter(UserModel.email == variable).first()
+                )
                 if user_found:
                     raise ValueError("Email exist!")
                 return variable

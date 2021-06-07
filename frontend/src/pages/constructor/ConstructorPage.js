@@ -14,7 +14,13 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Container from "@material-ui/core/Container";
 import AddIcon from '@material-ui/icons/Add';
 import $ from "jquery";
-import {appendButtons, appendTextBlock, appendTitleBlock, createBackground} from "./subConstructor";
+import {
+    appendConnecting,
+    appendButtons,
+    appendTextBlock,
+    appendTitleBlock,
+    createBackground,
+} from "./subConstructor";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -70,7 +76,6 @@ function generateShapes() {
         id: i.toString() == 0 ? "/start" : i.toString() == 1 ? "/continue" : "/ok",
         x: Math.random() * 500,
         y: Math.random() * 300,
-        isDragging: false,
         text: i === 0 ? "Test" : i === 1 ? "Another Test" : "One more more more test",
         buttons: i === 2 ? [
             {id: 0, text: "option1", link: "/start"},
@@ -155,26 +160,18 @@ export const ConstructorPage = () => {
     const history = useHistory();
 
     const handleDragStart = (e) => {
-        const id = e.target.id();
+        console.log(e);
         setRects(
             blocks.map((rect) => {
                 return {
                     ...rect,
-                    isDragging: rect.id === id,
+                    x: rect.id === e.target.id() ? e.evt.offsetX : rect.x,
+                    y: rect.id === e.target.id() ? e.evt.offsetY : rect.y,
                 };
             })
         );
     };
-    const handleDragEnd = (e) => {
-        setRects(
-            blocks.map((rect) => {
-                return {
-                    ...rect,
-                    isDragging: false,
-                };
-            })
-        );
-    };
+
     const handleDrawerOpen = (e) => {
         history.push("/");
     };
@@ -195,9 +192,8 @@ export const ConstructorPage = () => {
             let group_block = new Konva.Group({
                 id: block.id,
                 draggable: true,
-                onDragStart: handleDragStart,
-                onDragEnd: handleDragEnd
             })
+            group_block.on("dragmove", handleDragStart);
             group_block.on('mouseenter', function () {
                 stage.container().style.cursor = 'pointer';
             });
@@ -214,29 +210,7 @@ export const ConstructorPage = () => {
             layer.add(group_block);
         })
 
-        let groups = layer.getChildren((node) => {
-            return node.getClassName() === "Group";
-        });
-        blocks.forEach((block) => {
-            block.buttons.forEach((button) => {
-                let from_group = groups.filter((group) => group.getAttrs().id == block.id)[0],
-                    to_group = groups.filter((group) => group.getAttrs().id == button.link)[0];
-
-                let to_rect = to_group.getChildren()[0],
-                    from_rect = from_group.getChildren((node) => {
-                        return node.getAttrs().id == button.id
-                    })[0];
-
-                let line = new Konva.Arrow({
-                    stroke: 'black',
-                    fill: 'black',
-                });
-                line.points([from_rect.x(), from_rect.y(), to_rect.x(), to_rect.y()]);
-                layer.add(line);
-            })
-        })
-
-
+        appendConnecting(layer, blocks);
         stage.add(layer);
     });
 

@@ -119,34 +119,46 @@ export function appendButtons(group, block) {
     })
 }
 
-// //Connection
-// //TODO ПИЗДА С КОНЕКТАМИ ЕБАННЫМИ
-// let groups = layer.getChildren((node) => {
-//     return node.getClassName() === "Group";
-// });
-// rects.forEach((rect) => {
-//     if (rect.buttons.length){
-//         const buttons = rect.buttons;
-//         for(let i = 0; i < buttons.length; i++) {
-//             let points = []
-//
-//             groups.forEach((group) => {
-//                 if (group.getAttrs().id == buttons[i].link){
-//                     points.push(group.absolutePosition().x, group.absolutePosition().y);
-//                     console.log("TO", group.absolutePosition().x, group.absolutePosition().y, rects);
-//                 }
-//                 else if (group.getAttrs().id == rect.id){
-//                     points.push(group.absolutePosition().x, group.absolutePosition().y);
-//                     console.log("FROM", group.x(), group.y(), rects);
-//                 }
-//             })
-//
-//             let arrow = new Konva.Arrow({
-//                 stroke: 'black',
-//                 fill: 'black',
-//                 points: points
-//             })
-//             layer.add(arrow);
-//         }
-//     }
-// });
+export function updateConnecting(layer, blocks) {
+    let groups = layer.getChildren((node) => {
+        return node.getClassName() === "Group";
+    });
+    blocks.forEach((block) => {
+        block.buttons.forEach((button) => {
+            let from_group = groups.filter((group) => group.getAttrs().id == block.id)[0],
+                to_group = groups.filter((group) => group.getAttrs().id == button.link)[0];
+
+            let to_rect = to_group.getChildren()[0],
+                from_rect = from_group.getChildren((node) => {
+                    return node.getAttrs().id == button.id
+                })[0];
+
+            console.log(to_rect.x(), to_rect.y(), from_rect.x(), from_rect.y());
+        })
+    })
+}
+
+export function appendConnecting(layer, blocks) {
+    let groups = layer.getChildren((node) => {
+        return node.getClassName() === "Group";
+    });
+    blocks.forEach((block) => {
+        block.buttons.forEach((button) => {
+            let from_group = groups.filter((group) => group.getAttrs().id == block.id)[0],
+                to_group = groups.filter((group) => group.getAttrs().id == button.link)[0];
+
+            let to_rect = to_group.getChildren()[0],
+                from_rect = from_group.getChildren((node) => {
+                    return node.getAttrs().id == button.id
+                })[0];
+
+            let arrow = new Konva.Arrow({
+                stroke: 'black',
+                fill: 'black',
+            });
+            arrow.points([from_rect.x(), from_rect.y(), to_rect.x(), to_rect.y()]);
+
+            layer.add(arrow);
+        })
+    })
+}

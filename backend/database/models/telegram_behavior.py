@@ -6,13 +6,13 @@ from sqlalchemy.orm import relationship
 class TelegramBehavior(Base):
     __tablename__ = "telegram_behavior"
 
-    id = Column(Integer, ForeignKey('users.id'), primary_key=True)
-    id_script = Column(Integer, ForeignKey('telegram_scripts.id'), primary_key=True)
-    # child = relationship('EmailScripts', back_populates='parents')
-    # parent = relationship('User', back_populates='children')
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    script_id = Column(Integer, ForeignKey("telegram_scripts.id"), primary_key=True)
+    user = relationship("User", back_populates="telegram")
+    script = relationship("TelegramScript", back_populates="user")
 
     def __repr__(self):
-        return f"<TelegramBehavior(id:{self.id}, id_script:{self.name})>"
+        return f"<TelegramBehavior(user_id:{self.user_id}, script_id:{self.script_id})>"
 
     async def create(self):
         with create_session() as db:
