@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Optional, Union, List
 
 from auth.auth import parse_jwt
 from database.connect import create_session
@@ -51,3 +51,14 @@ async def update_scripts(scripts: FormUpdateScripts) -> bool:
                 ).create()
             return True
     return False
+
+
+def get_scripts(user_id: int) -> List[TelegramScript]:
+    with create_session() as db:
+        behaviours = db.query(TelegramBehavior).filter_by(user_id=user_id).all()
+        scripts = []
+        for behaviour in behaviours:
+            scripts.append(
+                db.query(TelegramScript).filter_by(id=behaviour.script_id).first()
+            )
+    return scripts

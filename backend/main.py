@@ -1,3 +1,5 @@
+import json
+
 import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -23,7 +25,7 @@ from telegram_scripts.query.form_update_scripts import (
     FormUpdateScripts,
     FormUpdateTelegramToken,
 )
-from telegram_scripts.scripts import update_scripts
+from telegram_scripts.scripts import update_scripts, get_scripts
 
 Base.metadata.create_all(bind=engine)
 
@@ -94,13 +96,34 @@ async def update_scenario(scripts: FormUpdateScripts):
     return JSONResponse(status_code=500)
 
 
+@app.post("/scripts/get_scenario")
+async def get_scenario(user: UserTiny):
+    payload = parse_jwt(user.token)
+    if payload:
+        user_id = payload.get("user_id")
+        scripts = get_scripts(user_id)
+        json_scripts = []
+        for script in scripts:
+            buttons = {}
+            if script.buttons:
+                buttons = json.loads(script.buttons)
+            json_scripts.append({
+                "command": script.command,
+                "text": script.text,
+                "buttons": buttons.get("buttons"),
+            })
+        return JSONResponse(status_code=200, content=json_scripts)
+    return JSONResponse(status_code=401)
+
+
 @app.post("/scripts/update_bots")
 def change_bot(user: UserTiny):
     payload = parse_jwt(user.token)
     if payload:
         user_id = payload.get("user_id")
         update_bot(user_id, bots)
-    return JSONResponse(status_code=200)
+        return JSONResponse(status_code=200)
+    return JSONResponse(status_code=401)
 
 
 @app.post("/bots/start")
@@ -110,7 +133,8 @@ def start_bot(user: UserTiny):
         user_id = payload.get("user_id")
         token = get_token_bot(user_id)
         launch_bot(token, bots)
-    return JSONResponse(status_code=200)
+        return JSONResponse(status_code=200)
+    return JSONResponse(status_code=401)
 
 
 @app.post("/bots/stop")
@@ -120,7 +144,8 @@ def stop_bot(user: UserTiny):
         user_id = payload.get("user_id")
         token = get_token_bot(user_id)
         disconnect_bot(token, bots)
-    return JSONResponse(status_code=200)
+        return JSONResponse(status_code=200)
+    return JSONResponse(status_code=401)
 
 
 if __name__ == "__main__":

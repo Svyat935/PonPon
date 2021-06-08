@@ -61,6 +61,10 @@ def update_bot(user_id: int, bots: List[Updater]):
     for updater in bots:
         if updater.bot.token == token:
             bot = updater
+            break
+    else:
+        bot = Updater(token)
+        bots.append(bot)
     if bot:
         # Clear all handlers before add news
         if bot.dispatcher.handlers:

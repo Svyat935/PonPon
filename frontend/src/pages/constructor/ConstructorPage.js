@@ -1,8 +1,9 @@
-import React, {useEffect} from "react"
+import React, {useEffect, useState} from "react"
 import {Stage, Layer, Rect, Text} from 'react-konva';
 import Konva from 'konva';
 import clsx from "clsx";
 import "./Constructor.css";
+import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import Typography from "@material-ui/core/Typography";
 import AppBar from "@material-ui/core/AppBar";
 import makeStyles from "@material-ui/core/styles/makeStyles";
@@ -19,7 +20,7 @@ import {
     appendButtons,
     appendTextBlock,
     appendTitleBlock,
-    createBackground,
+    createBackground, createButtons,
 } from "./subConstructor";
 
 const useStyles = makeStyles((theme) => ({
@@ -71,148 +72,112 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-function generateShapes() {
-    return [...Array(3)].map((_, i) => ({
-        id: i.toString() == 0 ? "/start" : i.toString() == 1 ? "/continue" : "/ok",
+async function generateShapes() {
+    let token = JSON.parse(localStorage.getItem("localData"))["token"];
+    let response = await fetch("scripts/get_scenario/", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            token: token,
+        })
+    }).then(response => response.json());
+    let blocks = [...response].map((block) => ({
+        id: block["command"],
         x: Math.random() * 500,
         y: Math.random() * 300,
-        text: i === 0 ? "Test" : i === 1 ? "Another Test" : "One more more more test",
-        buttons: i === 2 ? [
-            {id: 0, text: "option1", link: "/start"},
-            {id: 1, text: "option2", link: "/continue"},
-            {id: 2, text: "option3", link: "/start"}
-        ] : []
+        text: block["text"],
+        buttons: block["buttons"] || []
     }));
-}
-
-const INITIAL_STATE = generateShapes();
-
-function getRectangleBorderPoint(radians, size, sideOffset = 0) {
-    const width = size.width + sideOffset * 2;
-
-    const height = size.height + sideOffset * 2;
-
-    radians %= 2 * Math.PI;
-    if (radians < 0) {
-        radians += Math.PI * 2;
-    }
-
-    const phi = Math.atan(height / width);
-
-    let x, y;
-    if (
-        (radians >= 2 * Math.PI - phi && radians <= 2 * Math.PI) ||
-        (radians >= 0 && radians <= phi)
-    ) {
-        x = width / 2;
-        y = Math.tan(radians) * x;
-    } else if (radians >= phi && radians <= Math.PI - phi) {
-        y = height / 2;
-        x = y / Math.tan(radians);
-    } else if (radians >= Math.PI - phi && radians <= Math.PI + phi) {
-        x = -width / 2;
-        y = Math.tan(radians) * x;
-    } else if (radians >= Math.PI + phi && radians <= 2 * Math.PI - phi) {
-        y = -height / 2;
-        x = y / Math.tan(radians);
-    }
-
-    return {
-        x: -Math.round(x),
-        y: Math.round(y)
-    };
-}
-
-function getPoints(r1, r2) {
-    const c1 = getCenter(r1);
-    const c2 = getCenter(r2);
-
-    const dx = c1.x - c2.x;
-    const dy = c1.y - c2.y;
-    const angle = Math.atan2(-dy, dx);
-
-    const startOffset = getRectangleBorderPoint(angle + Math.PI, r1.size());
-    const endOffset = getRectangleBorderPoint(angle, r2.size());
-
-    const start = {
-        x: c1.x - startOffset.x,
-        y: c1.y - startOffset.y
-    };
-
-    const end = {
-        x: c2.x - endOffset.x,
-        y: c2.y - endOffset.y
-    };
-
-    return [start.x, start.y, end.x, end.y]
-}
-
-function getCenter(node) {
-    return {
-        x: node.x() + node.width() / 2,
-        y: node.y() + node.height() / 2,
-    }
+    return blocks;
 }
 
 export const ConstructorPage = () => {
-    const [blocks, setRects] = React.useState(INITIAL_STATE);
+    const [blocks, setBlocks] = useState([]);
+    const [stage, setStage] = useState(null);
+    const [layer, setLayer] = useState(null);
+    let current_block = null;
     const classes = useStyles();
     const history = useHistory();
 
     const handleDragStart = (e) => {
-        console.log(e);
-        setRects(
-            blocks.map((rect) => {
-                return {
-                    ...rect,
-                    x: rect.id === e.target.id() ? e.evt.offsetX : rect.x,
-                    y: rect.id === e.target.id() ? e.evt.offsetY : rect.y,
-                };
-            })
-        );
+        blocks.forEach((block) => {
+            block.x = block.id === e.target.id() ? e.evt.offsetX : block.x;
+            block.y = block.id === e.target.id() ? e.evt.offsetY : block.y
+        });
+        layer.find("Arrow").forEach((node) => node.destroy());
+        layer.draw();
+        appendConnecting(layer, blocks);
     };
 
     const handleDrawerOpen = (e) => {
         history.push("/");
     };
 
-    useEffect(() => {
+    const handleApplyCurrentBlock = (e) => {
+        current_block.text = $("#text").val();
+        current_block.id = $("#command_name").val();
+        console.log(blocks);
+        $("#action_block").hide(750);
+    }
+
+    useEffect(async () => {
         let main = $("#main")[0];
         let stage = new Konva.Stage({
             container: "stage",
             width: main.offsetWidth - 48,
             height: main.offsetHeight - 90,
         });
-
         let layer = new Konva.Layer();
-
-        createBackground(layer)
-
-        blocks.forEach((block) => {
-            let group_block = new Konva.Group({
-                id: block.id,
-                draggable: true,
-            })
-            group_block.on("dragmove", handleDragStart);
-            group_block.on('mouseenter', function () {
-                stage.container().style.cursor = 'pointer';
-            });
-            group_block.on('mouseleave', function () {
-                stage.container().style.cursor = 'default';
-            });
-            group_block.on("click", (e) => {
-                $("#action_block").show(750);
-            })
-            appendTitleBlock(group_block, block);
-            appendTextBlock(group_block, block);
-            appendButtons(group_block, block);
-
-            layer.add(group_block);
-        })
-
-        appendConnecting(layer, blocks);
+        createBackground(layer);
         stage.add(layer);
-    });
+
+        let new_blocks = await generateShapes();
+
+        layer = new Konva.Layer();
+        stage.add(layer);
+
+        setStage(stage);
+        setLayer(layer);
+        setBlocks(new_blocks);
+    }, [])
+
+    useEffect(() => {
+        if (!!layer) {
+            blocks.forEach((block) => {
+                let group_block = new Konva.Group({
+                    id: block.id,
+                    draggable: true,
+                })
+                group_block.on("dragmove", handleDragStart);
+                group_block.on('mouseenter', function () {
+                    stage.container().style.cursor = 'pointer';
+                });
+                group_block.on('mouseleave', function () {
+                    stage.container().style.cursor = 'default';
+                });
+                group_block.on("click", (e) => {
+                    $("#action_block").show(750);
+                    $("#command_name").val(e.target.parent.getAttrs().id);
+                    $("#text").val(e.target.parent.children[3].getAttrs().text);
+                    $("#buttons").append(createButtons(blocks, e.target.parent.children))
+                    blocks.forEach((block) => {
+                        if (block.id == e.target.parent.getAttrs().id) {
+                            current_block = block;
+                        }
+                    });
+                })
+                appendTitleBlock(group_block, block);
+                appendTextBlock(group_block, block);
+                appendButtons(group_block, block);
+
+                layer.add(group_block);
+            })
+
+            appendConnecting(layer, blocks);
+        }
+    }, [blocks]);
 
 
     return (
@@ -250,7 +215,7 @@ export const ConstructorPage = () => {
                         <div className="component_content">
                             <span>Command name:</span>
                             <div className="input_name">
-                                <input type="text" placeholder="Command name"/>
+                                <input type="text" id={"command_name"} placeholder="Command name"/>
                             </div>
                         </div>
                     </div>
@@ -258,54 +223,19 @@ export const ConstructorPage = () => {
                         <div className="component_content">
                             <span>Text for output:</span>
                             <div className="input_text">
-                                <textarea placeholder="Text for output"/>
+                                <textarea id={"text"} placeholder="Text for output"/>
                             </div>
                         </div>
                     </div>
                     <div className="block_component">
-                        <div className="component_content">
+                        <div id={"buttons"} className="component_content">
                             <span>Buttons:</span>
-                            <div className="content-button">
-                                <div className="button_name">
-                                    <input type="text" placeholder="Button name"/>
-                                </div>
-                                <div className="button_link">
-                                    <span>Link:</span>
-                                    <select className="link">
-                                        <option value="id 1">id 1</option>
-                                        <option value="id 2">id 2</option>
-                                        <option value="id 3">id 3</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="content-button">
-                                <div className="button_name">
-                                    <input type="text" placeholder="Button name"/>
-                                </div>
-                                <div className="button_link">
-                                    <span>Link:</span>
-                                    <select className="link">
-                                        <option value="id 1">id 1</option>
-                                        <option value="id 2">id 2</option>
-                                        <option value="id 3">id 3</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="content-button">
-                                <div className="button_name">
-                                    <input type="text" placeholder="Button name"/>
-                                </div>
-                                <div className="button_link">
-                                    <span>Link:</span>
-                                    <select className="link">
-                                        <option value="id 1">id 1</option>
-                                        <option value="id 2">id 2</option>
-                                        <option value="id 3">id 3</option>
-                                    </select>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
+                    <IconButton style={{margin: "10px 10px 0px 0px"}} onClick={() => handleApplyCurrentBlock()}>
+                        <CheckBoxIcon style={{fontSize: 30}}/>
+                    </IconButton>
                 </div>
             </div>
             <main id="main" className={classes.content}>
