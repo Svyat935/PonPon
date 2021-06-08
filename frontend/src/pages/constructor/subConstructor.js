@@ -145,7 +145,7 @@ export function appendConnecting(layer, blocks) {
     });
     blocks.forEach((block) => {
         block.buttons.forEach((button) => {
-            debugger;
+            //debugger;
             let from_group = groups.filter((group) => group.getAttrs().id == block.id)[0],
                 to_group = groups.filter((group) => "/" + group.getAttrs().id == button.link)[0];
 
@@ -163,6 +163,10 @@ export function appendConnecting(layer, blocks) {
             layer.add(arrow);
         })
     })
+}
+
+export function addNewBlocks(layer) {
+
 }
 
 export function createButtons(blocks, children) {

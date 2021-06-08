@@ -2,6 +2,10 @@ import React, {useEffect, useState} from "react"
 import {Stage, Layer, Rect, Text} from 'react-konva';
 import Konva from 'konva';
 import clsx from "clsx";
+import AddCommentIcon from '@material-ui/icons/AddComment';
+import LaunchIcon from '@material-ui/icons/Launch';
+import StopIcon from '@material-ui/icons/Stop';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import "./Constructor.css";
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import Typography from "@material-ui/core/Typography";
@@ -90,6 +94,7 @@ async function generateShapes() {
         text: block["text"],
         buttons: block["buttons"] || []
     }));
+    console.log(blocks);
     return blocks;
 }
 
@@ -101,6 +106,92 @@ export const ConstructorPage = () => {
     const classes = useStyles();
     const history = useHistory();
 
+    const launchBot = async (e) => {
+        let token = JSON.parse(localStorage.getItem("localData"))["token"];
+        let response = await fetch("/bots/start/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: token
+            })
+        })
+        if (response.status == 200){
+            alert("Bot active");
+        }
+        else{
+            alert("Sorry, we have problem");
+        }
+    }
+
+    const stopBot = async (e) => {
+        let token = JSON.parse(localStorage.getItem("localData"))["token"];
+        let response = await fetch("/bots/stop/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: token
+            })
+        })
+        if (response.status == 200){
+            alert("Bot stopped");
+        }
+        else{
+            alert("Sorry, we have problem");
+        }
+    }
+
+    const updateBots = async (e) => {
+        let token = JSON.parse(localStorage.getItem("localData"))["token"];
+        let response = await fetch("/scripts/update_bots/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: token
+            })
+        })
+        if (response.status == 200){
+            alert("Update bot");
+        }
+        else{
+            alert("Sorry, we have problem");
+        }
+    }
+
+    const saveBlocks = async (e) => {
+        let blocks_to_send = []
+        blocks.forEach((block) => {
+            blocks_to_send.push({
+                "command": block.id,
+                "text": block.text,
+                "buttons": block.buttons
+            })
+        })
+
+        let token = JSON.parse(localStorage.getItem("localData"))["token"];
+        let response = await fetch("/scripts/update/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: token,
+                blocks: blocks_to_send
+            })
+        })
+        if (response.status == 200){
+            alert("New Scripts Update");
+        }
+        else{
+            alert("Sorry, we have problem");
+        }
+    }
+
     const handleDragStart = (e) => {
         blocks.forEach((block) => {
             block.x = block.id === e.target.id() ? e.evt.offsetX : block.x;
@@ -108,7 +199,7 @@ export const ConstructorPage = () => {
         });
         layer.find("Arrow").forEach((node) => node.destroy());
         layer.draw();
-        appendConnecting(layer, blocks);
+        //appendConnecting(layer, blocks);
     };
 
     const handleDrawerOpen = (e) => {
@@ -118,7 +209,10 @@ export const ConstructorPage = () => {
     const handleApplyCurrentBlock = (e) => {
         current_block.text = $("#text").val();
         current_block.id = $("#command_name").val();
-        console.log(blocks);
+        layer.find("Group").forEach((node) => node.destroy());
+        layer.draw();
+        let new_blocks = blocks.map((node) => node);
+        setBlocks(new_blocks);
         $("#action_block").hide(750);
     }
 
@@ -143,7 +237,22 @@ export const ConstructorPage = () => {
         setBlocks(new_blocks);
     }, [])
 
+    const addNewBlock = () => {
+        let copyBlock = blocks.concat([{
+            id: "newBlock",
+            x: Math.random() * 500,
+            y: Math.random() * 300,
+            text: "text",
+            buttons: blocks[0].buttons
+        }]);
+        layer.find("Group").forEach((node) => {
+            node.destroy();
+        })
+        setBlocks(copyBlock);
+    }
+
     useEffect(() => {
+        console.log(blocks);
         if (!!layer) {
             blocks.forEach((block) => {
                 let group_block = new Konva.Group({
@@ -175,7 +284,7 @@ export const ConstructorPage = () => {
                 layer.add(group_block);
             })
 
-            appendConnecting(layer, blocks);
+            //appendConnecting(layer, blocks);
         }
     }, [blocks]);
 
@@ -242,11 +351,22 @@ export const ConstructorPage = () => {
                 <div className={classes.appBarSpacer}/>
                 <Container id="container" maxWidth="xl">
                     <div className={classes.buttons}>
-                        <IconButton className={classes.button}>
+                        <IconButton className={classes.button} onClick={() => addNewBlock()}>
                             <AddIcon style={{fontSize: 20}}/>
                         </IconButton>
+                        <IconButton className={classes.button} onClick={() => saveBlocks()}>
+                            <AddCommentIcon style={{fontSize: 20}}/>
+                        </IconButton>
+                        <IconButton className={classes.button} onClick={() => updateBots()}>
+                            <LaunchIcon style={{fontSize: 20}}/>
+                        </IconButton>
+                        <IconButton className={classes.button} onClick={() => launchBot()}>
+                            <PlayArrowIcon style={{fontSize: 20}}/>
+                        </IconButton>
+                        <IconButton className={classes.button} onClick={() => stopBot()}>
+                            <StopIcon style={{fontSize: 20}}/>
+                        </IconButton>
                     </div>
-
                     <div id={"stage"}></div>
                 </Container>
             </main>
